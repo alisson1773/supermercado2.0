@@ -1,7 +1,7 @@
 import React from 'react';
 import { Home, ShoppingCart, User as UserIcon, List, LogOut } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useCart } from '../App'; 
+import { useCart } from '../context'; 
 import { StorageService } from '../services/storage';
 
 interface LayoutProps {

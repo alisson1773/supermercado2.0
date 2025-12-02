@@ -1,30 +1,12 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
-import { User, CartItem, Product, Order } from './types';
+import React, { useState, useEffect } from 'react';
+import { HashRouter, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { User, Product, Order } from './types';
 import { StorageService } from './services/storage';
 import { Layout } from './components/Layout';
 import { Button, Input, StatusBadge } from './components/UIComponents';
 import { CATEGORIES, PRODUCTS } from './services/mockData';
-import { ChevronRight, Minus, Plus, ShoppingBag, Trash2, ArrowLeft, Search, MapPin } from 'lucide-react';
-
-// --- CONTEXT DEFINITIONS ---
-
-interface CartContextType {
-  cart: CartItem[];
-  addToCart: (product: Product, quantity: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
-  cartTotal: number;
-}
-
-const CartContext = createContext<CartContextType | undefined>(undefined);
-
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) throw new Error('useCart must be used within a CartProvider');
-  return context;
-};
+import { Minus, Plus, ShoppingBag, Trash2, ArrowLeft, Search, MapPin } from 'lucide-react';
+import { CartProvider, useCart } from './context';
 
 // --- PAGES ---
 
@@ -518,44 +500,6 @@ const AdminDashboard = () => {
 };
 
 // --- APP ROOT ---
-
-const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('freshmarket_cart');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem('freshmarket_cart', JSON.stringify(cart));
-  }, [cart]);
-
-  const addToCart = (product: Product, quantity: number) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item);
-      }
-      return [...prev, { ...product, quantity }];
-    });
-  };
-
-  const removeFromCart = (id: string) => setCart(prev => prev.filter(item => item.id !== id));
-  
-  const updateQuantity = (id: string, qty: number) => {
-    if (qty < 1) return removeFromCart(id);
-    setCart(prev => prev.map(item => item.id === id ? { ...item, quantity: qty } : item));
-  };
-
-  const clearCart = () => setCart([]);
-
-  const cartTotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-
-  return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal }}>
-      {children}
-    </CartContext.Provider>
-  );
-};
 
 // Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode; role?: string }> = ({ children, role }) => {
